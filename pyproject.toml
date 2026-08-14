@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cover-identity"
+version = "0.1.0"
+description = "Generate fictional, internally consistent cover identities with backstories and memory anchors."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["identity", "faker", "fiction", "roleplay", "cli"]
+dependencies = ["Faker>=18.0"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Games",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.scripts]
+coverid = "cover_identity.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
