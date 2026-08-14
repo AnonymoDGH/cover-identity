@@ -2,7 +2,7 @@
 
 # 🎭 Cover Identity
 
-<img src="logo.png" alt="Cover Identity" width="180"/>
+<img src="https://raw.githubusercontent.com/AnonymoDGH/cover-identity/main/logo.png" alt="Cover Identity" width="180"/>
 
 **Fictional legends that hold together.**
 
@@ -76,7 +76,7 @@ coverid memorize --locale fr_FR --seed 7
 
 ## How it works
 
-<img src="assets/architecture.svg" alt="Architecture" width="820"/>
+<img src="https://raw.githubusercontent.com/AnonymoDGH/cover-identity/main/assets/architecture.svg" alt="Architecture" width="820"/>
 
 ## Tests
 
