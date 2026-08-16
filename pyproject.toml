@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cover-identity"
-version = "0.1.0"
-description = "Generate fictional, internally consistent cover identities with backstories and memory anchors."
+version = "0.2.0"
+description = "Generate fictional, internally consistent cover identities: full dossiers, paper trails, drills, risk scoring, and encrypted vault storage."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
@@ -19,7 +19,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Games",
+    "Topic :: Games/Entertainment",
     "Topic :: Software Development :: Libraries",
 ]
 

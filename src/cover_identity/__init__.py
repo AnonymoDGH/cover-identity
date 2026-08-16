@@ -17,6 +17,8 @@ from pathlib import Path
 
 from faker import Faker
 
+from . import corpus, timeline as _timeline
+
 OCCUPATIONS = [
     "freelance translator", "logistics coordinator", "import/export clerk",
     "field service technician", "vintage bookseller", "travel photographer",
@@ -47,21 +49,53 @@ ANCHOR_QUESTIONS = [
 ]
 
 
-def _age_from_dob(dob: dt.date) -> int:
-    today = dt.date.today()
+def _age_from_dob(dob: dt.date, today: dt.date | None = None) -> int:
+    today = today or dt.date.today()
     return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
 
+def _make_dob(rng: random.Random, today: dt.date,
+              minimum_age: int = 28, maximum_age: int = 55) -> dt.date:
+    """A deterministic date of birth anchored to the reference date.
+
+    Faker's own date_of_birth always uses the real today, which breaks
+    consistency when a caller injects a reference date. So we draw the age
+    and the in-year offset from the seeded RNG instead.
+    """
+    age = rng.randint(minimum_age, maximum_age)
+    month = rng.randint(1, 12)
+    day = rng.randint(1, 28)  # safe for every month
+    birth_year = today.year - age
+    dob = dt.date(birth_year, month, day)
+    # If the birthday has not happened yet this year, the person is age-1
+    # until it does; nudge the year so the stated age matches exactly.
+    if (today.month, today.day) < (month, day):
+        dob = dt.date(birth_year + 1, month, day)
+    return dob
+
+
 def generate(locale: str = "en_US", seed: int | None = None,
-             template: str = "agent") -> dict:
-    """Build a cover identity dict. Same seed → same identity."""
+             template: str = "agent",
+             today: dt.date | None = None) -> dict:
+    """Build a cover identity dict. Same seed → same identity.
+
+    Args:
+        locale: Faker locale.
+        seed: Deterministic seed.
+        template: Reserved for future archetype templates.
+        today: Reference date for age/DOB/timeline; defaults to the real
+            today. Injecting it keeps the whole identity internally
+            consistent and reproducible.
+    """
     fake = Faker(locale)
     if seed is not None:
         Faker.seed(seed)
         random.seed(seed)
+    today = today or dt.date.today()
 
-    dob = fake.date_of_birth(minimum_age=28, maximum_age=55)
-    age = _age_from_dob(dob)
+    dob = _make_dob(random.Random(seed if seed is not None else random.random()),
+                    today)
+    age = _age_from_dob(dob, today)
     full = fake.name().strip()
     parts = full.split()
     first = parts[0]
@@ -78,15 +112,22 @@ def generate(locale: str = "en_US", seed: int | None = None,
     }
 
     company = f"{fake.company()}"
+    occupation = corpus.occupation_for_age(random.Random(seed if seed is not None
+                                                       else random.random()), age)
     backstory = BACKSTORY.format(
         birth_city=fake.city(),
         birth_year=str(dob.year),
         first=first,
         parents_shop=fake.company(),
         moved_city=fake.city(),
-        occupation=random.choice(OCCUPATIONS),
+        occupation=occupation,
         company=company,
     )
+
+    life = _timeline.build_timeline(dob, occupation,
+                                    rng=random.Random(seed if seed is not None
+                                                      else random.random()),
+                                    today=today)
 
     return {
         "name": full,
@@ -95,9 +136,10 @@ def generate(locale: str = "en_US", seed: int | None = None,
         "address": fake.address().replace("\n", ", "),
         "phone": fake.phone_number(),
         "email": email,
-        "occupation": random.choice(OCCUPATIONS),
+        "occupation": occupation,
         "employer": company,
         "backstory": backstory,
+        "timeline": life,
         "anchors": anchors,
         "cover_questions": [
             {"question": q, "answer": anchors[k]}
